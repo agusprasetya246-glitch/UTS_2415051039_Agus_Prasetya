@@ -23,6 +23,7 @@ lib/
 ├── screens/       # halaman aplikasi
 ├── widgets/       # komponen UI yang dipakai ulang
 ├── theme/         # warna dan tema
+├── utils/         # fungsi bantu, misalnya format tanggal
 └── main.dart
 
 ## Status

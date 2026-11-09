@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:gameshelf/config/breakpoints.dart';
 import 'package:gameshelf/config/genres.dart';
 import 'package:gameshelf/data/dummy_data.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
@@ -10,25 +11,35 @@ class CatalogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = Breakpoints.isExpanded(MediaQuery.sizeOf(context).width);
+    final sidePadding = isWide ? 24.0 : 16.0;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Katalog')),
+      appBar: AppBar(
+        title: const Text('Katalog'),
+
+        actions: isWide
+            ? const [
+                Padding(
+                  padding: EdgeInsets.only(right: 24),
+                  child: Center(
+                    child: SizedBox(width: 400, child: _CatalogSearchBar()),
+                  ),
+                ),
+              ]
+            : null,
+      ),
       body: Column(
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
-            child: SearchBar(
-              hintText: 'Cari judul game…',
-              leading: Icon(Icons.search),
-              elevation: WidgetStatePropertyAll(0),
-              padding: WidgetStatePropertyAll(
-                EdgeInsets.symmetric(horizontal: 16),
-              ),
+          if (!isWide)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: _CatalogSearchBar(),
             ),
-          ),
 
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            padding: EdgeInsets.fromLTRB(sidePadding, 12, 8, 12),
             child: Row(
               children: [
                 for (final genre in genreOptions)
@@ -47,21 +58,22 @@ class CatalogScreen extends StatelessWidget {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                const columns = 2;
+                final columns = Breakpoints.catalogColumns(
+                  constraints.maxWidth,
+                );
                 const spacing = 12.0;
-                const sidePadding = 16.0;
 
                 final itemWidth =
                     (constraints.maxWidth -
                         sidePadding * 2 -
                         spacing * (columns - 1)) /
                     columns;
-                // Tinggi kartu = thumbnail 16:9 + padding + dua baris teks
+
                 final textHeight = MediaQuery.textScalerOf(context).scale(36);
                 final itemHeight = itemWidth * 9 / 16 + 28 + textHeight;
 
                 return GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: EdgeInsets.fromLTRB(
                     sidePadding,
                     0,
                     sidePadding,
@@ -90,6 +102,20 @@ class CatalogScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CatalogSearchBar extends StatelessWidget {
+  const _CatalogSearchBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SearchBar(
+      hintText: 'Cari judul game…',
+      leading: Icon(Icons.search),
+      elevation: WidgetStatePropertyAll(0),
+      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16)),
     );
   }
 }
