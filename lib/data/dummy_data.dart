@@ -90,7 +90,11 @@ const Map<String, dynamic> dummyGameDetail = {
     'graphics': 'DirectX 11 compatible',
     'storage': '50 GB',
   },
-  'screenshots': [],
+  'screenshots': [
+    {'id': 1, 'image': ''},
+    {'id': 2, 'image': ''},
+    {'id': 3, 'image': ''},
+  ],
 };
 
 const List<Map<String, dynamic>> dummyBacklog = [
