@@ -1,28 +1,22 @@
-import 'package:gameshelf/config/genres.dart';
-import 'package:gameshelf/data/dummy_data.dart';
 import 'package:gameshelf/models/game.dart';
 import 'package:gameshelf/models/game_detail.dart';
+import 'package:gameshelf/services/free_to_game_api_service.dart';
 
 class GameRepository {
-  static const _fakeDelay = Duration(milliseconds: 600);
+  GameRepository(this._service);
 
-  Future<List<Game>> fetchGames({String? category}) async {
-    await Future<void>.delayed(_fakeDelay);
-    if (category == null) return dummyGames;
+  final FreeToGameApiService _service;
 
-    final label = genreOptions
-        .firstWhere((genre) => genre.category == category)
-        .label;
-    return dummyGames.where((game) => game.genre == label).toList();
+  Future<List<Game>> fetchGames({String? category}) {
+    return _service.fetchGames(category: category);
   }
 
   Future<List<Game>> fetchPopularGames() async {
-    await Future<void>.delayed(_fakeDelay);
-    return dummyGames.take(5).toList();
+    final games = await _service.fetchGames(sortBy: 'popularity');
+    return games.take(10).toList();
   }
 
-  Future<GameDetail> fetchGameDetail(int id) async {
-    await Future<void>.delayed(_fakeDelay);
-    return dummyDetailOf(id);
+  Future<GameDetail> fetchGameDetail(int id) {
+    return _service.fetchGameDetail(id);
   }
 }

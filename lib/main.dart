@@ -8,6 +8,7 @@ import 'package:gameshelf/repositories/backlog_repository.dart';
 import 'package:gameshelf/repositories/game_repository.dart';
 import 'package:gameshelf/screens/main_shell.dart';
 import 'package:gameshelf/theme/app_theme.dart';
+import 'package:gameshelf/services/free_to_game_api_service.dart';
 
 void main() {
   runApp(const GameShelfApp());
@@ -20,7 +21,11 @@ class GameShelfApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        Provider(create: (context) => GameRepository()),
+        Provider(create: (context) => FreeToGameApiService()),
+        Provider(
+          create: (context) =>
+              GameRepository(context.read<FreeToGameApiService>()),
+        ),
         Provider(create: (context) => BacklogRepository()),
 
         ChangeNotifierProvider(

@@ -1,114 +1,12 @@
 import 'package:gameshelf/models/backlog_item.dart';
-import 'package:gameshelf/models/backlog_status.dart';
-import 'package:gameshelf/models/game.dart';
-import 'package:gameshelf/models/game_detail.dart';
-
-const List<Map<String, dynamic>> _gamesJson = [
-  {
-    'id': 1,
-    'title': 'Warframe',
-    'thumbnail': '',
-    'short_description': 'Game aksi co-op orang ketiga bertema fiksi ilmiah.',
-    'genre': 'Shooter',
-    'platform': 'PC (Windows)',
-  },
-  {
-    'id': 2,
-    'title': 'Path of Exile',
-    'thumbnail': '',
-    'short_description':
-        'Action RPG bergaya dark fantasy dengan sistem skill yang luas.',
-    'genre': 'ARPG',
-    'platform': 'PC (Windows)',
-  },
-  {
-    'id': 3,
-    'title': 'Albion Online',
-    'thumbnail': '',
-    'short_description':
-        'MMORPG sandbox dengan ekonomi yang digerakkan pemain.',
-    'genre': 'MMORPG',
-    'platform': 'PC (Windows)',
-  },
-  {
-    'id': 4,
-    'title': 'Dota 2',
-    'thumbnail': '',
-    'short_description': 'MOBA 5 lawan 5 dengan ratusan hero.',
-    'genre': 'MOBA',
-    'platform': 'PC (Windows)',
-  },
-  {
-    'id': 5,
-    'title': 'Brawlhalla',
-    'thumbnail': '',
-    'short_description': 'Game fighting platform untuk banyak pemain.',
-    'genre': 'Fighting',
-    'platform': 'PC (Windows)',
-  },
-  {
-    'id': 6,
-    'title': 'Krunker',
-    'thumbnail': '',
-    'short_description':
-        'Shooter orang pertama yang dimainkan langsung di browser.',
-    'genre': 'Shooter',
-    'platform': 'Web Browser',
-  },
-  {
-    'id': 7,
-    'title': 'Destiny 2',
-    'thumbnail': '',
-    'short_description': 'Shooter aksi online dengan misi co-op dan PvP.',
-    'genre': 'Shooter',
-    'platform': 'PC (Windows)',
-  },
-  {
-    'id': 8,
-    'title': 'Hearthstone',
-    'thumbnail': '',
-    'short_description': 'Game kartu strategi dengan pertandingan cepat.',
-    'genre': 'Card Game',
-    'platform': 'PC (Windows)',
-  },
-];
-
-const Map<String, dynamic> _warframeDetailJson = {
-  'id': 1,
-  'title': 'Warframe',
-  'thumbnail': '',
-  'status': 'Live',
-  'short_description': 'A cooperative free-to-play third person online action game set in an evolving sci-fi world.',
-  'description':
-      'Warframe is a cooperative free-to-play third person online action game set in an evolving sci-fi world. '
-      'Players control members of the Tenno, an ancient race of warriors who have awoken from centuries of '
-      'cryo-sleep to find themselves at war with different factions of the Origin System.',
-  'genre': 'Shooter',
-  'platform': 'PC (Windows)',
-  'publisher': 'Digital Extremes',
-  'developer': 'Digital Extremes',
-  'release_date': '2013-03-25',
-  'minimum_system_requirements': {
-    'os': 'Windows 7 64-bit',
-    'processor': 'Intel Core i7 860 / AMD FX-4100',
-    'memory': '4 GB RAM',
-    'graphics': 'DirectX 11 compatible',
-    'storage': '50 GB',
-  },
-  'screenshots': [
-    {'id': 1, 'image': ''},
-    {'id': 2, 'image': ''},
-    {'id': 3, 'image': ''},
-  ],
-};
 
 const List<Map<String, dynamic>> _backlogJson = [
   {
     'id': 'b1',
     'student_id': '2415051039',
-    'game_id': 1,
-    'title': 'Warframe',
-    'thumbnail': '',
+    'game_id': 452,
+    'title': 'Call of Duty: Warzone',
+    'thumbnail': 'https://www.freetogame.com/g/452/thumbnail.jpg',
     'status': 'ingin_main',
     'rating': 0,
     'hours_played': 0,
@@ -118,21 +16,21 @@ const List<Map<String, dynamic>> _backlogJson = [
   {
     'id': 'b2',
     'student_id': '2415051039',
-    'game_id': 3,
-    'title': 'Albion Online',
-    'thumbnail': '',
+    'game_id': 540,
+    'title': 'Overwatch',
+    'thumbnail': 'https://www.freetogame.com/g/540/thumbnail.jpg',
     'status': 'sedang_main',
     'rating': 4,
     'hours_played': 35,
-    'note': 'Lagi naikin level gathering, target ikut guild minggu depan.',
+    'note': 'Lagi push rank bareng teman, target naik satu tier minggu ini.',
     'created_at': '2026-11-02T10:00:00Z',
   },
   {
     'id': 'b3',
     'student_id': '2415051039',
-    'game_id': 2,
-    'title': 'Path of Exile',
-    'thumbnail': '',
+    'game_id': 516,
+    'title': 'PUBG: BATTLEGROUNDS',
+    'thumbnail': 'https://www.freetogame.com/g/516/thumbnail.jpg',
     'status': 'ingin_main',
     'rating': 0,
     'hours_played': 0,
@@ -142,9 +40,9 @@ const List<Map<String, dynamic>> _backlogJson = [
   {
     'id': 'b4',
     'student_id': '2415051039',
-    'game_id': 5,
-    'title': 'Brawlhalla',
-    'thumbnail': '',
+    'game_id': 508,
+    'title': 'Enlisted',
+    'thumbnail': 'https://www.freetogame.com/g/508/thumbnail.jpg',
     'status': 'selesai',
     'rating': 3,
     'hours_played': 12,
@@ -154,9 +52,9 @@ const List<Map<String, dynamic>> _backlogJson = [
   {
     'id': 'b5',
     'student_id': '2415051039',
-    'game_id': 7,
-    'title': 'Destiny 2',
-    'thumbnail': '',
+    'game_id': 642,
+    'title': 'Neverness to Everness',
+    'thumbnail': 'https://www.freetogame.com/g/642/thumbnail.jpg',
     'status': 'selesai',
     'rating': 5,
     'hours_played': 60,
@@ -165,31 +63,6 @@ const List<Map<String, dynamic>> _backlogJson = [
   },
 ];
 
-final List<Game> dummyGames = _gamesJson.map(Game.fromJson).toList();
-
 final List<BacklogItem> dummyBacklog = _backlogJson
     .map(BacklogItem.fromJson)
     .toList();
-
-GameDetail dummyDetailOf(int gameId) {
-  if (gameId == _warframeDetailJson['id']) {
-    return GameDetail.fromJson(_warframeDetailJson);
-  }
-
-  final json = _gamesJson.firstWhere((game) => game['id'] == gameId);
-  return GameDetail.fromJson({
-    ...json,
-    'status': 'Live',
-    'description': json['short_description'],
-    'publisher': '-',
-    'developer': '-',
-    'release_date': '-',
-  });
-}
-
-BacklogStatus? dummyStatusOf(int gameId) {
-  for (final item in dummyBacklog) {
-    if (item.gameId == gameId) return item.status;
-  }
-  return null;
-}
