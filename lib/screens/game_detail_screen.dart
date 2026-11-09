@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:gameshelf/config/breakpoints.dart';
-import 'package:gameshelf/data/dummy_data.dart';
+import 'package:gameshelf/models/backlog_status.dart';
 import 'package:gameshelf/models/game_detail.dart';
+import 'package:gameshelf/providers/backlog_provider.dart';
+import 'package:gameshelf/providers/game_detail_provider.dart';
+import 'package:gameshelf/repositories/game_repository.dart';
 import 'package:gameshelf/screens/add_backlog_screen.dart';
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/info_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
+import 'package:gameshelf/widgets/status_badge.dart';
 
 class GameDetailScreen extends StatelessWidget {
   const GameDetailScreen({super.key, required this.gameId});
@@ -15,64 +20,102 @@ class GameDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final detail = dummyDetailOf(gameId);
+    return ChangeNotifierProvider(
+      create: (context) =>
+          GameDetailProvider(context.read<GameRepository>(), gameId)..load(),
+      child: const _GameDetailView(),
+    );
+  }
+}
+
+class _GameDetailView extends StatelessWidget {
+  const _GameDetailView();
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<GameDetailProvider>();
+    final status = context.watch<BacklogProvider>().statusOf(provider.gameId);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Game')),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          // Expanded (≥ 840): dua kolom
-          if (Breakpoints.isExpanded(constraints.maxWidth)) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _thumbnail(detail, wide: true),
-                        const SizedBox(height: 16),
-                        ..._screenshots(detail),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 32),
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ..._header(context, detail),
-                        const SizedBox(height: 24),
-                        ..._about(context, detail),
-                        const SizedBox(height: 16),
-                        ..._infoSections(detail),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
+      body: _buildBody(context, provider, status),
+    );
+  }
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            children: [
-              _thumbnail(detail, wide: false),
-              const SizedBox(height: 20),
-              ..._header(context, detail),
-              const SizedBox(height: 24),
-              ..._about(context, detail),
-              const SizedBox(height: 16),
-              ..._screenshots(detail),
-              ..._infoSections(detail),
-            ],
+  Widget _buildBody(
+    BuildContext context,
+    GameDetailProvider provider,
+    BacklogStatus? status,
+  ) {
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final error = provider.error;
+    if (error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(error, textAlign: TextAlign.center),
+        ),
+      );
+    }
+
+    final detail = provider.detail;
+    if (detail == null) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (Breakpoints.isExpanded(constraints.maxWidth)) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _thumbnail(detail, wide: true),
+                      const SizedBox(height: 16),
+                      ..._screenshots(detail),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 32),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ..._header(context, detail, status),
+                      const SizedBox(height: 24),
+                      ..._about(context, detail),
+                      const SizedBox(height: 16),
+                      ..._infoSections(detail),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
-        },
-      ),
+        }
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          children: [
+            _thumbnail(detail, wide: false),
+            const SizedBox(height: 20),
+            ..._header(context, detail, status),
+            const SizedBox(height: 24),
+            ..._about(context, detail),
+            const SizedBox(height: 16),
+            ..._screenshots(detail),
+            ..._infoSections(detail),
+          ],
+        );
+      },
     );
   }
 
@@ -85,7 +128,11 @@ class GameDetailScreen extends StatelessWidget {
     );
   }
 
-  List<Widget> _header(BuildContext context, GameDetail detail) {
+  List<Widget> _header(
+    BuildContext context,
+    GameDetail detail,
+    BacklogStatus? status,
+  ) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -95,7 +142,9 @@ class GameDetailScreen extends StatelessWidget {
       Wrap(
         spacing: 8,
         runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
+          if (status != null) StatusBadge(status: status),
           Chip(
             avatar: Icon(
               Icons.sports_esports_outlined,

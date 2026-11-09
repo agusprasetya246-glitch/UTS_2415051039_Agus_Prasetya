@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:gameshelf/config/app_info.dart';
-import 'package:gameshelf/data/dummy_data.dart';
 import 'package:gameshelf/widgets/info_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
+import 'package:gameshelf/providers/backlog_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -20,10 +21,7 @@ class ProfileScreen extends StatelessWidget {
         .map((word) => word[0])
         .join()
         .toUpperCase();
-    final totalHours = dummyBacklog.fold<int>(
-      0,
-      (sum, item) => sum + item.hoursPlayed,
-    );
+    final backlog = context.watch<BacklogProvider>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
@@ -83,13 +81,16 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatCard(
-                  value: '${dummyBacklog.length}',
+                  value: '${backlog.items.length}',
                   label: 'Game di backlog',
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _StatCard(value: '$totalHours', label: 'Total jam main'),
+                child: _StatCard(
+                  value: '${backlog.totalHours}',
+                  label: 'Total jam main',
+                ),
               ),
             ],
           ),

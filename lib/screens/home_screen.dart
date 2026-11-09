@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:gameshelf/config/app_info.dart';
 import 'package:gameshelf/config/app_tabs.dart';
 import 'package:gameshelf/config/genres.dart';
-import 'package:gameshelf/data/dummy_data.dart';
+import 'package:gameshelf/models/backlog_status.dart';
+import 'package:gameshelf/providers/backlog_provider.dart';
+import 'package:gameshelf/providers/game_provider.dart';
 import 'package:gameshelf/screens/game_detail_screen.dart';
 import 'package:gameshelf/theme/app_colors.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
 import 'package:gameshelf/widgets/game_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
-import 'package:gameshelf/models/backlog_status.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, this.onOpenTab});
 
   final ValueChanged<int>? onOpenTab;
-
-  int _countStatus(BacklogStatus status) =>
-      dummyBacklog.where((item) => item.status == status).length;
 
   void _openDetail(BuildContext context, int gameId) {
     Navigator.of(context).push(
@@ -30,10 +29,10 @@ class HomeScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final firstName = AppInfo.studentName.split(' ').first;
-    final popular = dummyGames.take(5).toList();
-    final firstWant = dummyBacklog.firstWhere(
-      (item) => item.status == BacklogStatus.wantToPlay,
-    );
+
+    final games = context.watch<GameProvider>();
+    final backlog = context.watch<BacklogProvider>();
+    final firstWant = backlog.firstWantToPlay;
 
     return Scaffold(
       appBar: AppBar(
@@ -67,8 +66,8 @@ class HomeScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatusCount(
-                  count: _countStatus(BacklogStatus.wantToPlay),
-                  label: 'Ingin main',
+                  count: backlog.countOf(BacklogStatus.wantToPlay),
+                  label: BacklogStatus.wantToPlay.label,
                   color: AppColors.wantToPlay,
                   onTap: () => onOpenTab?.call(AppTab.backlog),
                 ),
@@ -76,8 +75,8 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _StatusCount(
-                  count: _countStatus(BacklogStatus.playing),
-                  label: 'Sedang main',
+                  count: backlog.countOf(BacklogStatus.playing),
+                  label: BacklogStatus.playing.label,
                   color: AppColors.playing,
                   onTap: () => onOpenTab?.call(AppTab.backlog),
                 ),
@@ -85,8 +84,8 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _StatusCount(
-                  count: _countStatus(BacklogStatus.done),
-                  label: 'Selesai',
+                  count: backlog.countOf(BacklogStatus.done),
+                  label: BacklogStatus.done.label,
                   color: AppColors.done,
                   onTap: () => onOpenTab?.call(AppTab.backlog),
                 ),
@@ -95,7 +94,11 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          _RandomGameCard(onTap: () => _openDetail(context, firstWant.gameId)),
+          _RandomGameCard(
+            onTap: firstWant == null
+                ? null
+                : () => _openDetail(context, firstWant.gameId),
+          ),
           const SizedBox(height: 24),
 
           const SectionHeader(title: 'Jelajahi genre'),
@@ -109,7 +112,10 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8),
                     child: CategoryChip(
                       label: genre.label,
-                      onTap: () => onOpenTab?.call(AppTab.catalog),
+                      onTap: () {
+                        context.read<GameProvider>().selectGenre(genre);
+                        onOpenTab?.call(AppTab.catalog);
+                      },
                     ),
                   ),
               ],
@@ -123,33 +129,52 @@ class HomeScreen extends StatelessWidget {
             onAction: () => onOpenTab?.call(AppTab.catalog),
           ),
           const SizedBox(height: 4),
-          SizedBox(
-            height: 210,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: popular.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final game = popular[index];
-                return SizedBox(
-                  width: 220,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: GameCard(
-                      title: game.title,
-                      genre: game.genre,
-                      platform: game.platform,
-                      thumbnailUrl: game.thumbnail,
-                      status: dummyStatusOf(game.id),
-                      onTap: () => _openDetail(context, game.id),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+          SizedBox(height: 210, child: _buildPopular(context, games, backlog)),
         ],
       ),
+    );
+  }
+
+  Widget _buildPopular(
+    BuildContext context,
+    GameProvider games,
+    BacklogProvider backlog,
+  ) {
+    if (games.isLoadingPopular) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final error = games.popularError;
+    if (error != null) {
+      return Center(child: Text(error, textAlign: TextAlign.center));
+    }
+
+    final popular = games.popularGames;
+    if (popular.isEmpty) {
+      return const Center(child: Text('Belum ada game populer'));
+    }
+
+    return ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: popular.length,
+      separatorBuilder: (context, index) => const SizedBox(width: 12),
+      itemBuilder: (context, index) {
+        final game = popular[index];
+        return SizedBox(
+          width: 220,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: GameCard(
+              title: game.title,
+              genre: game.genre,
+              platform: game.platform,
+              thumbnailUrl: game.thumbnail,
+              status: backlog.statusOf(game.id),
+              onTap: () => _openDetail(context, game.id),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -208,9 +233,9 @@ class _StatusCount extends StatelessWidget {
 }
 
 class _RandomGameCard extends StatelessWidget {
-  const _RandomGameCard({required this.onTap});
+  const _RandomGameCard({this.onTap});
 
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
