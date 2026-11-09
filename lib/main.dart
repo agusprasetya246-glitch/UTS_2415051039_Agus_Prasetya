@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-const String studentName = 'Agus Prasetya';
-const String studentId = '2415051039';
-const String studentClass = 'PTI-5B';
+import 'package:gameshelf/config/app_info.dart';
+import 'package:gameshelf/theme/app_theme.dart';
 
 void main() {
   runApp(const GameShelfApp());
@@ -14,9 +13,9 @@ class GameShelfApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GameShelf',
+      title: AppInfo.appName,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
+      theme: AppTheme.dark,
       home: const WelcomeScreen(),
     );
   }
@@ -28,6 +27,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: SafeArea(
@@ -37,9 +37,13 @@ class WelcomeScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.sports_esports, size: 72),
+                Icon(
+                  Icons.sports_esports,
+                  size: 72,
+                  color: colorScheme.primary,
+                ),
                 const SizedBox(height: 16),
-                Text('GameShelf', style: textTheme.headlineMedium),
+                Text(AppInfo.appName, style: textTheme.headlineMedium),
                 const SizedBox(height: 8),
                 Text(
                   'Katalog game free-to-play dan backlog pribadi',
@@ -48,8 +52,10 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  '$studentName · $studentId · $studentClass',
-                  style: textTheme.bodySmall,
+                  '${AppInfo.studentName} · ${AppInfo.studentId} · ${AppInfo.studentClass}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
