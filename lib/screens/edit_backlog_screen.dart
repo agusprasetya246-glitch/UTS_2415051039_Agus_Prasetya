@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 
 class EditBacklogScreen extends StatelessWidget {
-  const EditBacklogScreen({super.key});
+  const EditBacklogScreen({super.key, required this.item});
+
+  final Map<String, dynamic> item;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Backlog')),
-      body: const Center(child: Text('Form edit backlog dibuat di Tahap 11')),
+      body: Center(
+        child: Text(
+          'Form edit untuk ${item['title']}\ndibuat di Tahap 11',
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 }

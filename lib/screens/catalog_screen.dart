@@ -5,6 +5,7 @@ import 'package:gameshelf/config/genres.dart';
 import 'package:gameshelf/data/dummy_data.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
 import 'package:gameshelf/widgets/game_card.dart';
+import 'package:gameshelf/screens/game_detail_screen.dart';
 
 class CatalogScreen extends StatelessWidget {
   const CatalogScreen({super.key});
@@ -94,6 +95,12 @@ class CatalogScreen extends StatelessWidget {
                       platform: game['platform'] as String,
                       thumbnailUrl: game['thumbnail'] as String?,
                       status: dummyStatusOf(game['id'] as int),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              GameDetailScreen(gameId: game['id'] as int),
+                        ),
+                      ),
                     );
                   },
                 );

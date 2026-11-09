@@ -5,13 +5,16 @@ import 'package:gameshelf/data/dummy_data.dart';
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/info_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
+import 'package:gameshelf/screens/add_backlog_screen.dart';
 
 class GameDetailScreen extends StatelessWidget {
-  const GameDetailScreen({super.key});
+  const GameDetailScreen({super.key, required this.gameId});
+
+  final int gameId;
 
   @override
   Widget build(BuildContext context) {
-    const detail = dummyGameDetail;
+    final detail = dummyDetailOf(gameId);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Game')),
@@ -123,7 +126,11 @@ class GameDetailScreen extends StatelessWidget {
       SizedBox(
         width: double.infinity,
         child: FilledButton.icon(
-          onPressed: () {},
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => AddBacklogScreen(game: detail),
+            ),
+          ),
           icon: const Icon(Icons.add),
           label: const Text('Tambah ke Backlog'),
         ),

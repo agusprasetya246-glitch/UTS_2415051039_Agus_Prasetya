@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
 
 import 'package:gameshelf/config/app_info.dart';
+import 'package:gameshelf/config/app_tabs.dart';
 import 'package:gameshelf/config/genres.dart';
 import 'package:gameshelf/data/dummy_data.dart';
+import 'package:gameshelf/screens/game_detail_screen.dart';
 import 'package:gameshelf/theme/app_colors.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
 import 'package:gameshelf/widgets/game_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onOpenTab});
+
+  final ValueChanged<int>? onOpenTab;
 
   int _countStatus(String status) =>
       dummyBacklog.where((item) => item['status'] == status).length;
+
+  void _openDetail(BuildContext context, int gameId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => GameDetailScreen(gameId: gameId)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +30,9 @@ class HomeScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final firstName = AppInfo.studentName.split(' ').first;
     final popular = dummyGames.take(5).toList();
+    final firstWant = dummyBacklog.firstWhere(
+      (item) => item['status'] == 'ingin_main',
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +62,6 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Ringkasan jumlah game per status
           Row(
             children: [
               Expanded(
@@ -57,6 +69,7 @@ class HomeScreen extends StatelessWidget {
                   count: _countStatus('ingin_main'),
                   label: 'Ingin main',
                   color: AppColors.wantToPlay,
+                  onTap: () => onOpenTab?.call(AppTab.backlog),
                 ),
               ),
               const SizedBox(width: 8),
@@ -65,6 +78,7 @@ class HomeScreen extends StatelessWidget {
                   count: _countStatus('sedang_main'),
                   label: 'Sedang main',
                   color: AppColors.playing,
+                  onTap: () => onOpenTab?.call(AppTab.backlog),
                 ),
               ),
               const SizedBox(width: 8),
@@ -73,13 +87,16 @@ class HomeScreen extends StatelessWidget {
                   count: _countStatus('selesai'),
                   label: 'Selesai',
                   color: AppColors.done,
+                  onTap: () => onOpenTab?.call(AppTab.backlog),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
 
-          const _RandomGameCard(),
+          _RandomGameCard(
+            onTap: () => _openDetail(context, firstWant['game_id'] as int),
+          ),
           const SizedBox(height: 24),
 
           const SectionHeader(title: 'Jelajahi genre'),
@@ -91,7 +108,10 @@ class HomeScreen extends StatelessWidget {
                 for (final genre in genreOptions.skip(1))
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: CategoryChip(label: genre.label, onTap: () {}),
+                    child: CategoryChip(
+                      label: genre.label,
+                      onTap: () => onOpenTab?.call(AppTab.catalog),
+                    ),
                   ),
               ],
             ),
@@ -101,7 +121,7 @@ class HomeScreen extends StatelessWidget {
           SectionHeader(
             title: 'Populer',
             actionLabel: 'Lihat semua',
-            onAction: () {},
+            onAction: () => onOpenTab?.call(AppTab.catalog),
           ),
           const SizedBox(height: 4),
           SizedBox(
@@ -122,6 +142,7 @@ class HomeScreen extends StatelessWidget {
                       platform: game['platform'] as String,
                       thumbnailUrl: game['thumbnail'] as String?,
                       status: dummyStatusOf(game['id'] as int),
+                      onTap: () => _openDetail(context, game['id'] as int),
                     ),
                   ),
                 );
@@ -139,11 +160,13 @@ class _StatusCount extends StatelessWidget {
     required this.count,
     required this.label,
     required this.color,
+    this.onTap,
   });
 
   final int count;
   final String label;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -154,27 +177,31 @@ class _StatusCount extends StatelessWidget {
       margin: EdgeInsets.zero,
       elevation: 0,
       color: colorScheme.surfaceContainer,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$count',
-              style: textTheme.headlineSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$count',
+                style: textTheme.headlineSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -182,7 +209,9 @@ class _StatusCount extends StatelessWidget {
 }
 
 class _RandomGameCard extends StatelessWidget {
-  const _RandomGameCard();
+  const _RandomGameCard({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +223,7 @@ class _RandomGameCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(

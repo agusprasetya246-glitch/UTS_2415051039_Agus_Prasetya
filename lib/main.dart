@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gameshelf/config/app_info.dart';
 import 'package:gameshelf/screens/home_screen.dart';
 import 'package:gameshelf/theme/app_theme.dart';
+import 'package:gameshelf/screens/main_shell.dart';
 
 void main() {
   runApp(const GameShelfApp());
@@ -17,7 +18,7 @@ class GameShelfApp extends StatelessWidget {
       title: AppInfo.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      home: const HomeScreen(),
+      home: const MainShell(),
     );
   }
 }

@@ -166,3 +166,19 @@ String? dummyStatusOf(int gameId) {
   }
   return null;
 }
+
+Map<String, dynamic> dummyDetailOf(int gameId) {
+  if (gameId == dummyGameDetail['id']) return dummyGameDetail;
+
+  final game = dummyGames.firstWhere((g) => g['id'] == gameId);
+  return {
+    ...game,
+    'status': 'Live',
+    'description': game['short_description'],
+    'publisher': '-',
+    'developer': '-',
+    'release_date': '-',
+    'minimum_system_requirements': null,
+    'screenshots': <Map<String, dynamic>>[],
+  };
+}

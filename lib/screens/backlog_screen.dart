@@ -4,6 +4,7 @@ import 'package:gameshelf/data/dummy_data.dart';
 import 'package:gameshelf/utils/date_formatter.dart';
 import 'package:gameshelf/widgets/backlog_tile.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
+import 'package:gameshelf/screens/edit_backlog_screen.dart';
 
 class BacklogScreen extends StatelessWidget {
   const BacklogScreen({super.key});
@@ -69,6 +70,11 @@ class BacklogScreen extends StatelessWidget {
                   hoursPlayed: item['hours_played'] as int,
                   addedLabel: formatShortDate(
                     DateTime.parse(item['created_at'] as String),
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => EditBacklogScreen(item: item),
+                    ),
                   ),
                 );
               },
