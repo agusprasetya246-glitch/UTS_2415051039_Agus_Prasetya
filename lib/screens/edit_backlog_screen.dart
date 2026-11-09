@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gameshelf/models/backlog_item.dart';
 
 class EditBacklogScreen extends StatelessWidget {
   const EditBacklogScreen({super.key, required this.item});
 
-  final Map<String, dynamic> item;
+  final BacklogItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +12,7 @@ class EditBacklogScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Edit Backlog')),
       body: Center(
         child: Text(
-          'Form edit untuk ${item['title']}\ndibuat di Tahap 11',
+          'Form edit untuk ${item.title}\ndibuat di Tahap 11',
           textAlign: TextAlign.center,
         ),
       ),

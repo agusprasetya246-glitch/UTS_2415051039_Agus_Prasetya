@@ -1,4 +1,9 @@
-const List<Map<String, dynamic>> dummyGames = [
+import 'package:gameshelf/models/backlog_item.dart';
+import 'package:gameshelf/models/backlog_status.dart';
+import 'package:gameshelf/models/game.dart';
+import 'package:gameshelf/models/game_detail.dart';
+
+const List<Map<String, dynamic>> _gamesJson = [
   {
     'id': 1,
     'title': 'Warframe',
@@ -68,7 +73,7 @@ const List<Map<String, dynamic>> dummyGames = [
   },
 ];
 
-const Map<String, dynamic> dummyGameDetail = {
+const Map<String, dynamic> _warframeDetailJson = {
   'id': 1,
   'title': 'Warframe',
   'thumbnail': '',
@@ -97,7 +102,7 @@ const Map<String, dynamic> dummyGameDetail = {
   ],
 };
 
-const List<Map<String, dynamic>> dummyBacklog = [
+const List<Map<String, dynamic>> _backlogJson = [
   {
     'id': 'b1',
     'student_id': '2415051039',
@@ -160,25 +165,31 @@ const List<Map<String, dynamic>> dummyBacklog = [
   },
 ];
 
-String? dummyStatusOf(int gameId) {
-  for (final item in dummyBacklog) {
-    if (item['game_id'] == gameId) return item['status'] as String;
+final List<Game> dummyGames = _gamesJson.map(Game.fromJson).toList();
+
+final List<BacklogItem> dummyBacklog = _backlogJson
+    .map(BacklogItem.fromJson)
+    .toList();
+
+GameDetail dummyDetailOf(int gameId) {
+  if (gameId == _warframeDetailJson['id']) {
+    return GameDetail.fromJson(_warframeDetailJson);
   }
-  return null;
-}
 
-Map<String, dynamic> dummyDetailOf(int gameId) {
-  if (gameId == dummyGameDetail['id']) return dummyGameDetail;
-
-  final game = dummyGames.firstWhere((g) => g['id'] == gameId);
-  return {
-    ...game,
+  final json = _gamesJson.firstWhere((game) => game['id'] == gameId);
+  return GameDetail.fromJson({
+    ...json,
     'status': 'Live',
-    'description': game['short_description'],
+    'description': json['short_description'],
     'publisher': '-',
     'developer': '-',
     'release_date': '-',
-    'minimum_system_requirements': null,
-    'screenshots': <Map<String, dynamic>>[],
-  };
+  });
+}
+
+BacklogStatus? dummyStatusOf(int gameId) {
+  for (final item in dummyBacklog) {
+    if (item.gameId == gameId) return item.status;
+  }
+  return null;
 }

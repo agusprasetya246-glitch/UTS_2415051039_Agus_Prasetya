@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gameshelf/theme/app_colors.dart';
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/status_badge.dart';
+import 'package:gameshelf/models/backlog_status.dart';
 
 class BacklogTile extends StatelessWidget {
   const BacklogTile({
@@ -18,7 +19,7 @@ class BacklogTile extends StatelessWidget {
   });
 
   final String title;
-  final String status;
+  final BacklogStatus status;
   final int rating;
   final int hoursPlayed;
   final String addedLabel;

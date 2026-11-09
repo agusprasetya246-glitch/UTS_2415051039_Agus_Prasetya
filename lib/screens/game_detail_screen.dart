@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:gameshelf/config/breakpoints.dart';
 import 'package:gameshelf/data/dummy_data.dart';
+import 'package:gameshelf/models/game_detail.dart';
+import 'package:gameshelf/screens/add_backlog_screen.dart';
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/info_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
-import 'package:gameshelf/screens/add_backlog_screen.dart';
 
 class GameDetailScreen extends StatelessWidget {
   const GameDetailScreen({super.key, required this.gameId});
@@ -20,6 +21,7 @@ class GameDetailScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Detail Game')),
       body: LayoutBuilder(
         builder: (context, constraints) {
+          // Expanded (≥ 840): dua kolom
           if (Breakpoints.isExpanded(constraints.maxWidth)) {
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
@@ -74,22 +76,21 @@ class GameDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _thumbnail(Map<String, dynamic> detail, {required bool wide}) {
+  Widget _thumbnail(GameDetail detail, {required bool wide}) {
     return GameThumbnail(
-      title: detail['title'] as String,
-      imageUrl: detail['thumbnail'] as String?,
+      title: detail.title,
+      imageUrl: detail.thumbnail,
       borderRadius: wide ? 16 : 12,
       initialsSize: wide ? 64 : 44,
     );
   }
 
-  List<Widget> _header(BuildContext context, Map<String, dynamic> detail) {
+  List<Widget> _header(BuildContext context, GameDetail detail) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final platform = detail['platform'] as String;
 
     return [
-      Text(detail['title'] as String, style: textTheme.headlineSmall),
+      Text(detail.title, style: textTheme.headlineSmall),
       const SizedBox(height: 12),
       Wrap(
         spacing: 8,
@@ -101,23 +102,23 @@ class GameDetailScreen extends StatelessWidget {
               size: 18,
               color: colorScheme.primary,
             ),
-            label: Text(detail['genre'] as String),
+            label: Text(detail.genre),
           ),
           Chip(
             avatar: Icon(
-              platform.contains('Browser')
+              detail.isBrowserGame
                   ? Icons.language
                   : Icons.desktop_windows_outlined,
               size: 18,
               color: colorScheme.primary,
             ),
-            label: Text(platform),
+            label: Text(detail.platform),
           ),
         ],
       ),
       const SizedBox(height: 12),
       Text(
-        detail['short_description'] as String,
+        detail.shortDescription,
         style: textTheme.bodyMedium?.copyWith(
           color: colorScheme.onSurfaceVariant,
         ),
@@ -138,12 +139,12 @@ class GameDetailScreen extends StatelessWidget {
     ];
   }
 
-  List<Widget> _about(BuildContext context, Map<String, dynamic> detail) {
+  List<Widget> _about(BuildContext context, GameDetail detail) {
     return [
       const SectionHeader(title: 'Tentang game'),
       const SizedBox(height: 8),
       Text(
-        detail['description'] as String,
+        detail.description,
         maxLines: 4,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.bodyMedium,
@@ -155,10 +156,8 @@ class GameDetailScreen extends StatelessWidget {
     ];
   }
 
-  List<Widget> _screenshots(Map<String, dynamic> detail) {
-    final screenshots = (detail['screenshots'] as List)
-        .cast<Map<String, dynamic>>();
-    if (screenshots.isEmpty) return [];
+  List<Widget> _screenshots(GameDetail detail) {
+    if (detail.screenshots.isEmpty) return [];
 
     return [
       const SectionHeader(title: 'Screenshot'),
@@ -167,13 +166,13 @@ class GameDetailScreen extends StatelessWidget {
         height: 124,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          itemCount: screenshots.length,
+          itemCount: detail.screenshots.length,
           separatorBuilder: (context, index) => const SizedBox(width: 8),
           itemBuilder: (context, index) => SizedBox(
             width: 220,
             child: GameThumbnail(
-              title: detail['title'] as String,
-              imageUrl: screenshots[index]['image'] as String?,
+              title: detail.title,
+              imageUrl: detail.screenshots[index],
               borderRadius: 8,
             ),
           ),
@@ -183,33 +182,31 @@ class GameDetailScreen extends StatelessWidget {
     ];
   }
 
-  List<Widget> _infoSections(Map<String, dynamic> detail) {
-    final requirements =
-        detail['minimum_system_requirements'] as Map<String, dynamic>?;
+  List<Widget> _infoSections(GameDetail detail) {
+    final requirements = detail.minimumSystemRequirements;
 
     return [
       const SectionHeader(title: 'Informasi'),
       const SizedBox(height: 12),
       InfoCard(
         items: {
-          'Developer': detail['developer'] as String,
-          'Publisher': detail['publisher'] as String,
-          'Tanggal rilis': detail['release_date'] as String,
-          'Status': detail['status'] as String,
+          'Developer': detail.developer,
+          'Publisher': detail.publisher,
+          'Tanggal rilis': detail.releaseDate,
+          'Status': detail.status,
         },
       ),
-
       if (requirements != null) ...[
         const SizedBox(height: 24),
         const SectionHeader(title: 'Spesifikasi minimum'),
         const SizedBox(height: 12),
         InfoCard(
           items: {
-            'OS': requirements['os'] as String? ?? '-',
-            'Prosesor': requirements['processor'] as String? ?? '-',
-            'Memori': requirements['memory'] as String? ?? '-',
-            'Grafis': requirements['graphics'] as String? ?? '-',
-            'Penyimpanan': requirements['storage'] as String? ?? '-',
+            'OS': requirements.os,
+            'Prosesor': requirements.processor,
+            'Memori': requirements.memory,
+            'Grafis': requirements.graphics,
+            'Penyimpanan': requirements.storage,
           },
         ),
       ],

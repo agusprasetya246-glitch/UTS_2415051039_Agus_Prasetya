@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/status_badge.dart';
+import 'package:gameshelf/models/backlog_status.dart';
 
 class GameCard extends StatelessWidget {
   const GameCard({
@@ -18,7 +19,7 @@ class GameCard extends StatelessWidget {
   final String genre;
   final String platform;
   final String? thumbnailUrl;
-  final String? status;
+  final BacklogStatus? status;
   final VoidCallback? onTap;
 
   @override

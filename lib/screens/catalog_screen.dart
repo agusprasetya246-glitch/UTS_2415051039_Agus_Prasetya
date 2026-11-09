@@ -90,15 +90,15 @@ class CatalogScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final game = dummyGames[index];
                     return GameCard(
-                      title: game['title'] as String,
-                      genre: game['genre'] as String,
-                      platform: game['platform'] as String,
-                      thumbnailUrl: game['thumbnail'] as String?,
-                      status: dummyStatusOf(game['id'] as int),
+                      title: game.title,
+                      genre: game.genre,
+                      platform: game.platform,
+                      thumbnailUrl: game.thumbnail,
+                      status: dummyStatusOf(game.id),
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) =>
-                              GameDetailScreen(gameId: game['id'] as int),
+                              GameDetailScreen(gameId: game.id),
                         ),
                       ),
                     );

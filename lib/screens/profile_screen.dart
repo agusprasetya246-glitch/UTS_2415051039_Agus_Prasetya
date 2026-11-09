@@ -22,7 +22,7 @@ class ProfileScreen extends StatelessWidget {
         .toUpperCase();
     final totalHours = dummyBacklog.fold<int>(
       0,
-      (sum, item) => sum + (item['hours_played'] as int),
+      (sum, item) => sum + item.hoursPlayed,
     );
 
     return Scaffold(
