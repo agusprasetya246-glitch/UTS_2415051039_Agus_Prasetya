@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:gameshelf/config/app_info.dart';
 import 'package:gameshelf/providers/backlog_provider.dart';
@@ -9,8 +10,17 @@ import 'package:gameshelf/repositories/game_repository.dart';
 import 'package:gameshelf/screens/main_shell.dart';
 import 'package:gameshelf/theme/app_theme.dart';
 import 'package:gameshelf/services/free_to_game_api_service.dart';
+import 'package:gameshelf/config/supabase_config.dart';
+import 'package:gameshelf/services/backlog_supabase_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
+
   runApp(const GameShelfApp());
 }
 
@@ -26,7 +36,13 @@ class GameShelfApp extends StatelessWidget {
           create: (context) =>
               GameRepository(context.read<FreeToGameApiService>()),
         ),
-        Provider(create: (context) => BacklogRepository()),
+        Provider(
+          create: (context) => BacklogSupabaseService(Supabase.instance.client),
+        ),
+        Provider(
+          create: (context) =>
+              BacklogRepository(context.read<BacklogSupabaseService>()),
+        ),
 
         ChangeNotifierProvider(
           create: (context) => GameProvider(context.read<GameRepository>())
