@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gameshelf/config/breakpoints.dart';
-import 'package:gameshelf/models/backlog_status.dart';
+import 'package:gameshelf/models/backlog_item.dart';
 import 'package:gameshelf/models/game_detail.dart';
 import 'package:gameshelf/providers/backlog_provider.dart';
 import 'package:gameshelf/providers/game_detail_provider.dart';
 import 'package:gameshelf/repositories/game_repository.dart';
 import 'package:gameshelf/screens/add_backlog_screen.dart';
+import 'package:gameshelf/screens/edit_backlog_screen.dart';
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/info_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
@@ -34,18 +35,20 @@ class _GameDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<GameDetailProvider>();
-    final status = context.watch<BacklogProvider>().statusOf(provider.gameId);
+    final backlogItem = context.watch<BacklogProvider>().itemForGame(
+      provider.gameId,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Detail Game')),
-      body: _buildBody(context, provider, status),
+      body: _buildBody(context, provider, backlogItem),
     );
   }
 
   Widget _buildBody(
     BuildContext context,
     GameDetailProvider provider,
-    BacklogStatus? status,
+    BacklogItem? backlogItem,
   ) {
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -89,7 +92,7 @@ class _GameDetailView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      ..._header(context, detail, status),
+                      ..._header(context, detail, backlogItem),
                       const SizedBox(height: 24),
                       ..._about(context, detail),
                       const SizedBox(height: 16),
@@ -107,7 +110,7 @@ class _GameDetailView extends StatelessWidget {
           children: [
             _thumbnail(detail, wide: false),
             const SizedBox(height: 20),
-            ..._header(context, detail, status),
+            ..._header(context, detail, backlogItem),
             const SizedBox(height: 24),
             ..._about(context, detail),
             const SizedBox(height: 16),
@@ -131,7 +134,7 @@ class _GameDetailView extends StatelessWidget {
   List<Widget> _header(
     BuildContext context,
     GameDetail detail,
-    BacklogStatus? status,
+    BacklogItem? backlogItem,
   ) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
@@ -144,7 +147,7 @@ class _GameDetailView extends StatelessWidget {
         runSpacing: 8,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          if (status != null) StatusBadge(status: status),
+          if (backlogItem != null) StatusBadge(status: backlogItem.status),
           Chip(
             avatar: Icon(
               Icons.sports_esports_outlined,
@@ -175,15 +178,25 @@ class _GameDetailView extends StatelessWidget {
       const SizedBox(height: 20),
       SizedBox(
         width: double.infinity,
-        child: FilledButton.icon(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AddBacklogScreen(game: detail),
-            ),
-          ),
-          icon: const Icon(Icons.add),
-          label: const Text('Tambah ke Backlog'),
-        ),
+        child: backlogItem == null
+            ? FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AddBacklogScreen(game: detail),
+                  ),
+                ),
+                icon: const Icon(Icons.add),
+                label: const Text('Tambah ke Backlog'),
+              )
+            : FilledButton.tonalIcon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EditBacklogScreen(item: backlogItem),
+                  ),
+                ),
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit di Backlog'),
+              ),
       ),
     ];
   }

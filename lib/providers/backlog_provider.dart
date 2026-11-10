@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:gameshelf/models/game.dart';
 
 import 'package:gameshelf/models/backlog_item.dart';
 import 'package:gameshelf/models/backlog_status.dart';
@@ -12,6 +13,25 @@ class BacklogProvider extends ChangeNotifier {
   List<BacklogItem> _items = [];
   bool _isLoading = false;
   String? _error;
+
+  /// CREATE: menyimpan game ke backlog.
+  Future<void> add({
+    required Game game,
+    required BacklogStatus status,
+    required int rating,
+    required int hoursPlayed,
+    required String note,
+  }) async {
+    final created = await _repository.add(
+      game: game,
+      status: status,
+      rating: rating,
+      hoursPlayed: hoursPlayed,
+      note: note,
+    );
+    _items = [created, ..._items];
+    notifyListeners();
+  }
 
   List<BacklogItem> get items => List.unmodifiable(_items);
   bool get isLoading => _isLoading;
