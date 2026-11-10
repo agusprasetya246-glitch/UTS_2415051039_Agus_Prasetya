@@ -1,18 +1,80 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
-import 'package:gameshelf/models/game.dart';
 
 import 'package:gameshelf/models/backlog_item.dart';
 import 'package:gameshelf/models/backlog_status.dart';
+import 'package:gameshelf/models/game.dart';
 import 'package:gameshelf/repositories/backlog_repository.dart';
 
 class BacklogProvider extends ChangeNotifier {
   BacklogProvider(this._repository);
 
   final BacklogRepository _repository;
+  final Random _random = Random();
 
   List<BacklogItem> _items = [];
   bool _isLoading = false;
   String? _error;
+
+  BacklogStatus? _filter;
+
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  BacklogStatus? get filter => _filter;
+
+  List<BacklogItem> get items => List.unmodifiable(_items);
+
+  List<BacklogItem> get filteredItems {
+    final filter = _filter;
+    if (filter == null) return items;
+    return _items.where((item) => item.status == filter).toList();
+  }
+
+  int get totalHours =>
+      _items.fold<int>(0, (sum, item) => sum + item.hoursPlayed);
+
+  int countOf(BacklogStatus status) =>
+      _items.where((item) => item.status == status).length;
+
+  BacklogItem? itemForGame(int gameId) {
+    for (final item in _items) {
+      if (item.gameId == gameId) return item;
+    }
+    return null;
+  }
+
+  BacklogStatus? statusOf(int gameId) => itemForGame(gameId)?.status;
+
+  BacklogItem? randomWantToPlay() {
+    final candidates = _items
+        .where((item) => item.status == BacklogStatus.wantToPlay)
+        .toList();
+    if (candidates.isEmpty) return null;
+    return candidates[_random.nextInt(candidates.length)];
+  }
+
+  void setFilter(BacklogStatus? status) {
+    if (_filter == status) return;
+    _filter = status;
+    notifyListeners();
+  }
+
+  /// READ dari Supabase.
+  Future<void> loadBacklog({bool showLoading = true}) async {
+    if (showLoading) _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _items = await _repository.fetchBacklog();
+    } catch (e) {
+      _error = 'Gagal memuat backlog. ($e)';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
 
   /// CREATE: menyimpan game ke backlog.
   Future<void> add({
@@ -50,47 +112,6 @@ class BacklogProvider extends ChangeNotifier {
 
     await _repository.remove(id);
     _items = _items.where((current) => current.id != id).toList();
-    notifyListeners();
-  }
-
-  List<BacklogItem> get items => List.unmodifiable(_items);
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-
-  int get totalHours =>
-      _items.fold<int>(0, (sum, item) => sum + item.hoursPlayed);
-
-  int countOf(BacklogStatus status) =>
-      _items.where((item) => item.status == status).length;
-
-  BacklogItem? itemForGame(int gameId) {
-    for (final item in _items) {
-      if (item.gameId == gameId) return item;
-    }
-    return null;
-  }
-
-  BacklogStatus? statusOf(int gameId) => itemForGame(gameId)?.status;
-
-  BacklogItem? get firstWantToPlay {
-    for (final item in _items) {
-      if (item.status == BacklogStatus.wantToPlay) return item;
-    }
-    return null;
-  }
-
-  Future<void> loadBacklog() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      _items = await _repository.fetchBacklog();
-    } catch (e) {
-      _error = 'Gagal memuat backlog. ($e)';
-    }
-
-    _isLoading = false;
     notifyListeners();
   }
 }

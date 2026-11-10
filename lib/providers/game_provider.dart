@@ -16,10 +16,6 @@ class GameProvider extends ChangeNotifier {
   String? _error;
   int _requestId = 0;
 
-  List<Game> _popularGames = [];
-  bool _isLoadingPopular = false;
-  String? _popularError;
-
   GenreOption get selectedGenre => _selectedGenre;
   String get query => _query;
   bool get isLoading => _isLoading;
@@ -33,13 +29,17 @@ class GameProvider extends ChangeNotifier {
         .toList();
   }
 
+  List<Game> _popularGames = [];
+  bool _isLoadingPopular = false;
+  String? _popularError;
+
   List<Game> get popularGames => List.unmodifiable(_popularGames);
   bool get isLoadingPopular => _isLoadingPopular;
   String? get popularError => _popularError;
 
-  Future<void> loadGames() async {
+  Future<void> loadGames({bool showLoading = true}) async {
     final requestId = ++_requestId;
-    _isLoading = true;
+    if (showLoading) _isLoading = true;
     _error = null;
     notifyListeners();
 
@@ -47,7 +47,6 @@ class GameProvider extends ChangeNotifier {
       final result = await _repository.fetchGames(
         category: _selectedGenre.category,
       );
-
       if (requestId != _requestId) return;
       _games = result;
     } catch (e) {
@@ -66,8 +65,15 @@ class GameProvider extends ChangeNotifier {
   }
 
   void setQuery(String value) {
+    if (value == _query) return;
     _query = value;
     notifyListeners();
+  }
+
+  void resetFilters() {
+    _query = '';
+    notifyListeners();
+    selectGenre(genreOptions.first);
   }
 
   Future<void> loadPopular() async {

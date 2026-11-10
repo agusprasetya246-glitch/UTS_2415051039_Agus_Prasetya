@@ -12,6 +12,7 @@ import 'package:gameshelf/theme/app_theme.dart';
 import 'package:gameshelf/services/free_to_game_api_service.dart';
 import 'package:gameshelf/config/supabase_config.dart';
 import 'package:gameshelf/services/backlog_supabase_service.dart';
+import 'package:gameshelf/providers/navigation_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -53,6 +54,7 @@ class GameShelfApp extends StatelessWidget {
           create: (context) =>
               BacklogProvider(context.read<BacklogRepository>())..loadBacklog(),
         ),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
       child: MaterialApp(
         title: AppInfo.appName,

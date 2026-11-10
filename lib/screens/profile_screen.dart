@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:gameshelf/config/app_info.dart';
 import 'package:gameshelf/widgets/info_card.dart';
@@ -117,14 +118,7 @@ class ProfileScreen extends StatelessWidget {
                 color: colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Data game disediakan oleh FreeToGame.com',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
+              const Expanded(child: _FreeToGameAttribution()),
             ],
           ),
         ],
@@ -171,6 +165,57 @@ class _StatCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FreeToGameAttribution extends StatelessWidget {
+  const _FreeToGameAttribution();
+
+  static final Uri _url = Uri.parse('https://www.freetogame.com');
+
+  Future<void> _open(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final opened = await launchUrl(
+        _url,
+        mode: LaunchMode.externalApplication,
+      );
+      if (opened) return;
+    } catch (_) {
+      // Lanjut ke pesan di bawah.
+    }
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Tidak bisa membuka FreeToGame.com')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Wrap(
+      alignment: WrapAlignment.start,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          'Data game disediakan oleh',
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        TextButton(
+          onPressed: () => _open(context),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+          ),
+          child: const Text(
+            'FreeToGame.com',
+            style: TextStyle(decoration: TextDecoration.underline),
+          ),
+        ),
+      ],
     );
   }
 }

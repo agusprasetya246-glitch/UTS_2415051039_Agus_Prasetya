@@ -24,6 +24,27 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  void _openBacklog(BuildContext context, BacklogStatus status) {
+    context.read<BacklogProvider>().setFilter(status);
+    onOpenTab?.call(AppTab.backlog);
+  }
+
+  void _openRandomGame(BuildContext context) {
+    final picked = context.read<BacklogProvider>().randomWantToPlay();
+    if (picked == null) return;
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('Coba main ${picked.title} hari ini!')),
+      );
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GameDetailScreen(gameId: picked.gameId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -32,7 +53,6 @@ class HomeScreen extends StatelessWidget {
 
     final games = context.watch<GameProvider>();
     final backlog = context.watch<BacklogProvider>();
-    final firstWant = backlog.firstWantToPlay;
 
     return Scaffold(
       appBar: AppBar(
@@ -69,7 +89,7 @@ class HomeScreen extends StatelessWidget {
                   count: backlog.countOf(BacklogStatus.wantToPlay),
                   label: BacklogStatus.wantToPlay.label,
                   color: AppColors.wantToPlay,
-                  onTap: () => onOpenTab?.call(AppTab.backlog),
+                  onTap: () => _openBacklog(context, BacklogStatus.wantToPlay),
                 ),
               ),
               const SizedBox(width: 8),
@@ -78,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                   count: backlog.countOf(BacklogStatus.playing),
                   label: BacklogStatus.playing.label,
                   color: AppColors.playing,
-                  onTap: () => onOpenTab?.call(AppTab.backlog),
+                  onTap: () => _openBacklog(context, BacklogStatus.playing),
                 ),
               ),
               const SizedBox(width: 8),
@@ -87,7 +107,7 @@ class HomeScreen extends StatelessWidget {
                   count: backlog.countOf(BacklogStatus.done),
                   label: BacklogStatus.done.label,
                   color: AppColors.done,
-                  onTap: () => onOpenTab?.call(AppTab.backlog),
+                  onTap: () => _openBacklog(context, BacklogStatus.done),
                 ),
               ),
             ],
@@ -95,9 +115,9 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           _RandomGameCard(
-            onTap: firstWant == null
+            onTap: backlog.countOf(BacklogStatus.wantToPlay) == 0
                 ? null
-                : () => _openDetail(context, firstWant.gameId),
+                : () => _openRandomGame(context),
           ),
           const SizedBox(height: 24),
 

@@ -205,16 +205,7 @@ class _GameDetailView extends StatelessWidget {
     return [
       const SectionHeader(title: 'Tentang game'),
       const SizedBox(height: 8),
-      Text(
-        detail.description,
-        maxLines: 4,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: TextButton(onPressed: () {}, child: const Text('Selengkapnya')),
-      ),
+      _ExpandableText(detail.description),
     ];
   }
 
@@ -273,5 +264,60 @@ class _GameDetailView extends StatelessWidget {
         ),
       ],
     ];
+  }
+}
+
+class _ExpandableText extends StatefulWidget {
+  const _ExpandableText(this.text);
+
+  final String text;
+
+  @override
+  State<_ExpandableText> createState() => _ExpandableTextState();
+}
+
+class _ExpandableTextState extends State<_ExpandableText> {
+  static const int _collapsedLines = 4;
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodyMedium;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          text: TextSpan(text: widget.text, style: style),
+          maxLines: _collapsedLines,
+          textDirection: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
+        )..layout(maxWidth: constraints.maxWidth);
+        final isLong = painter.didExceedMaxLines;
+        painter.dispose();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              alignment: Alignment.topCenter,
+              child: Text(
+                widget.text,
+                style: style,
+                maxLines: _expanded ? null : _collapsedLines,
+                overflow: _expanded
+                    ? TextOverflow.visible
+                    : TextOverflow.ellipsis,
+              ),
+            ),
+            if (isLong)
+              TextButton(
+                onPressed: () => setState(() => _expanded = !_expanded),
+                child: Text(_expanded ? 'Sembunyikan' : 'Selengkapnya'),
+              ),
+          ],
+        );
+      },
+    );
   }
 }

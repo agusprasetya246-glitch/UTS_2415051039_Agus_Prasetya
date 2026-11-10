@@ -5,6 +5,8 @@ import 'package:gameshelf/models/game.dart';
 import 'package:gameshelf/providers/backlog_provider.dart';
 import 'package:gameshelf/services/database_exception.dart';
 import 'package:gameshelf/widgets/backlog_form.dart';
+import 'package:gameshelf/config/app_tabs.dart';
+import 'package:gameshelf/providers/navigation_provider.dart';
 
 class AddBacklogScreen extends StatefulWidget {
   const AddBacklogScreen({super.key, required this.game});
@@ -22,6 +24,7 @@ class _AddBacklogScreenState extends State<AddBacklogScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final backlog = context.read<BacklogProvider>();
+    final navigation = context.read<NavigationProvider>();
 
     setState(() => _isSaving = true);
 
@@ -34,7 +37,17 @@ class _AddBacklogScreenState extends State<AddBacklogScreen> {
         note: data.note,
       );
       messenger.showSnackBar(
-        SnackBar(content: Text('${widget.game.title} ditambahkan ke backlog')),
+        SnackBar(
+          content: Text('${widget.game.title} ditambahkan ke backlog'),
+          action: SnackBarAction(
+            label: 'Lihat',
+            onPressed: () {
+              backlog.setFilter(null); // pastikan game baru terlihat
+              navigation.select(AppTab.backlog);
+              navigator.popUntil((route) => route.isFirst);
+            },
+          ),
+        ),
       );
       navigator.pop();
     } on DatabaseException catch (e) {
