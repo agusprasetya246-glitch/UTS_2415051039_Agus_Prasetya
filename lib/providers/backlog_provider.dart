@@ -33,6 +33,16 @@ class BacklogProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// UPDATE: menyimpan perubahan, lalu mengganti item lama di daftar.
+  Future<void> update(BacklogItem item) async {
+    final updated = await _repository.update(item);
+    _items = [
+      for (final current in _items)
+        if (current.id == updated.id) updated else current,
+    ];
+    notifyListeners();
+  }
+
   List<BacklogItem> get items => List.unmodifiable(_items);
   bool get isLoading => _isLoading;
   String? get error => _error;

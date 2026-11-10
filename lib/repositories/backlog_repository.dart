@@ -32,4 +32,8 @@ class BacklogRepository {
     );
     return _service.insert(item);
   }
+
+  Future<BacklogItem> update(BacklogItem item) {
+    return _service.update(item);
+  }
 }

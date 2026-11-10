@@ -34,4 +34,31 @@ class BacklogSupabaseService {
       throw DatabaseException('Gagal menyimpan ke database (${e.message})');
     }
   }
+
+  Future<BacklogItem> update(BacklogItem item) async {
+    final id = item.id;
+    if (id == null) {
+      throw const DatabaseException('Data belum tersimpan, tidak bisa diubah');
+    }
+
+    try {
+      final row = await _client
+          .from(_table)
+          .update({
+            'status': item.status.value,
+            'rating': item.rating,
+            'hours_played': item.hoursPlayed,
+            'note': item.note,
+          })
+          .eq('id', id)
+          .select()
+          .single();
+      return BacklogItem.fromJson(row);
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST116') {
+        throw const DatabaseException('Data ini sudah tidak ada di database');
+      }
+      throw DatabaseException('Gagal memperbarui data (${e.message})');
+    }
+  }
 }
