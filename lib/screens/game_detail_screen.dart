@@ -13,6 +13,7 @@ import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/info_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
 import 'package:gameshelf/widgets/status_badge.dart';
+import 'package:gameshelf/widgets/state_view.dart';
 
 class GameDetailScreen extends StatelessWidget {
   const GameDetailScreen({super.key, required this.gameId});
@@ -51,16 +52,15 @@ class _GameDetailView extends StatelessWidget {
     BacklogItem? backlogItem,
   ) {
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const StateView.loading(message: 'Memuat detail game…');
     }
 
     final error = provider.error;
     if (error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(error, textAlign: TextAlign.center),
-        ),
+      return StateView.error(
+        title: 'Gagal memuat detail game',
+        message: error,
+        onRetry: () => context.read<GameDetailProvider>().load(),
       );
     }
 

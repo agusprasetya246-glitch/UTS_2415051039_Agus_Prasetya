@@ -12,6 +12,7 @@ import 'package:gameshelf/theme/app_colors.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
 import 'package:gameshelf/widgets/game_card.dart';
 import 'package:gameshelf/widgets/section_header.dart';
+import 'package:gameshelf/widgets/state_view.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, this.onOpenTab});
@@ -161,12 +162,16 @@ class HomeScreen extends StatelessWidget {
     BacklogProvider backlog,
   ) {
     if (games.isLoadingPopular) {
-      return const Center(child: CircularProgressIndicator());
+      return const StateView.loading(compact: true);
     }
 
     final error = games.popularError;
     if (error != null) {
-      return Center(child: Text(error, textAlign: TextAlign.center));
+      return StateView.error(
+        message: error,
+        compact: true,
+        onRetry: () => games.loadPopular(),
+      );
     }
 
     final popular = games.popularGames;

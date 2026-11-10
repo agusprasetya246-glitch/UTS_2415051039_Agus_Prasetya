@@ -6,6 +6,7 @@ import 'package:gameshelf/models/backlog_item.dart';
 import 'package:gameshelf/models/backlog_status.dart';
 import 'package:gameshelf/models/game.dart';
 import 'package:gameshelf/repositories/backlog_repository.dart';
+import 'package:gameshelf/utils/error_message.dart';
 
 class BacklogProvider extends ChangeNotifier {
   BacklogProvider(this._repository);
@@ -60,19 +61,30 @@ class BacklogProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// READ dari Supabase.
-  Future<void> loadBacklog({bool showLoading = true}) async {
-    if (showLoading) _isLoading = true;
+  /// READ dari Supabase dengan spinner (muat awal dan tombol "Coba lagi").
+  Future<void> loadBacklog() async {
+    _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       _items = await _repository.fetchBacklog();
     } catch (e) {
-      _error = 'Gagal memuat backlog. ($e)';
+      _error = friendlyErrorMessage(e);
     }
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> refresh() async {
+    try {
+      _items = await _repository.fetchBacklog();
+      _error = null;
+    } catch (e) {
+      if (_error == null && _items.isNotEmpty) rethrow;
+      _error = friendlyErrorMessage(e);
+    }
     notifyListeners();
   }
 

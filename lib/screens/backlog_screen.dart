@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:gameshelf/config/app_tabs.dart';
 import 'package:gameshelf/models/backlog_item.dart';
 import 'package:gameshelf/models/backlog_status.dart';
 import 'package:gameshelf/providers/backlog_provider.dart';
+import 'package:gameshelf/providers/navigation_provider.dart';
 import 'package:gameshelf/screens/edit_backlog_screen.dart';
 import 'package:gameshelf/services/database_exception.dart';
 import 'package:gameshelf/utils/date_formatter.dart';
+import 'package:gameshelf/utils/error_message.dart';
 import 'package:gameshelf/widgets/backlog_tile.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
 import 'package:gameshelf/widgets/confirm_delete_dialog.dart';
+import 'package:gameshelf/widgets/state_view.dart';
 
 class BacklogScreen extends StatelessWidget {
   const BacklogScreen({super.key});
@@ -59,27 +63,36 @@ class BacklogScreen extends StatelessWidget {
   }
 
   Widget _buildList(BuildContext context, BacklogProvider backlog) {
-    if (backlog.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     final provider = context.read<BacklogProvider>();
-    Future<void> refresh() => provider.loadBacklog(showLoading: false);
+
+    if (backlog.isLoading) {
+      return const StateView.loading(message: 'Memuat backlog…');
+    }
 
     final error = backlog.error;
     if (error != null) {
       return RefreshIndicator(
-        onRefresh: refresh,
-        child: _ScrollableMessage(error),
+        onRefresh: () => _refresh(context),
+        child: StateView.error(
+          title: 'Gagal memuat backlog',
+          message: error,
+          onRetry: () => provider.loadBacklog(),
+        ),
       );
     }
 
     if (backlog.items.isEmpty) {
       return RefreshIndicator(
-        onRefresh: refresh,
-        child: const _ScrollableMessage(
-          'Backlog masih kosong.\n'
-          'Simpan game dari Katalog untuk mulai mencatat progres main kamu.',
+        onRefresh: () => _refresh(context),
+        child: StateView.empty(
+          icon: Icons.bookmark_add_outlined,
+          title: 'Backlog masih kosong',
+          message: 'Simpan game dari Katalog untuk mulai mencatat progres main kamu.',
+          actionLabel: 'Jelajahi Katalog',
+          actionIcon: Icons.grid_view_rounded,
+          prominentAction: true,
+          onAction: () =>
+              context.read<NavigationProvider>().select(AppTab.catalog),
         ),
       );
     }
@@ -88,9 +101,14 @@ class BacklogScreen extends StatelessWidget {
     final filter = backlog.filter;
     if (items.isEmpty && filter != null) {
       return RefreshIndicator(
-        onRefresh: refresh,
-        child: _ScrollableMessage(
-          'Belum ada game berstatus "${filter.label}".',
+        onRefresh: () => _refresh(context),
+        child: StateView.empty(
+          icon: Icons.filter_list_off,
+          title: 'Belum ada game berstatus "${filter.label}"',
+          message:
+              'Pilih filter lain, atau ubah status game lewat halaman Edit.',
+          actionLabel: 'Tampilkan semua',
+          onAction: () => provider.setFilter(null),
         ),
       );
     }
@@ -98,7 +116,7 @@ class BacklogScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return RefreshIndicator(
-      onRefresh: refresh,
+      onRefresh: () => _refresh(context),
       child: ListView.separated(
         // Selalu bisa ditarik walaupun isinya sedikit.
         physics: const AlwaysScrollableScrollPhysics(),
@@ -138,6 +156,16 @@ class BacklogScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _refresh(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final provider = context.read<BacklogProvider>();
+    try {
+      await provider.refresh();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+    }
+  }
+
   Future<void> _confirmDelete(BuildContext context, BacklogItem item) async {
     // Ambil semua yang butuh context SEBELUM await.
     final messenger = ScaffoldMessenger.of(context);
@@ -163,35 +191,5 @@ class BacklogScreen extends StatelessWidget {
         ),
       );
     }
-  }
-}
-
-class _ScrollableMessage extends StatelessWidget {
-  const _ScrollableMessage(this.message);
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

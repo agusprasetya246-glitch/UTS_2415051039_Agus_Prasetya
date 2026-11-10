@@ -7,8 +7,10 @@ import 'package:gameshelf/models/game.dart';
 import 'package:gameshelf/providers/backlog_provider.dart';
 import 'package:gameshelf/providers/game_provider.dart';
 import 'package:gameshelf/screens/game_detail_screen.dart';
+import 'package:gameshelf/utils/error_message.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
 import 'package:gameshelf/widgets/game_card.dart';
+import 'package:gameshelf/widgets/state_view.dart';
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -42,8 +44,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
     context.read<GameProvider>().resetFilters();
   }
 
+  Future<void> _refresh() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await context.read<GameProvider>().refreshGames();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(friendlyErrorMessage(e))));
+    }
+  }
+
   void _openDetail(Game game) {
-    FocusScope.of(context).unfocus();
+    FocusScope.of(context).unfocus(); // tutup keyboard dulu
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => GameDetailScreen(gameId: game.id),
@@ -56,6 +67,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final provider = context.watch<GameProvider>();
     final backlog = context.watch<BacklogProvider>();
 
+    // MediaQuery: keputusan tingkat layar (letak search bar).
     final isWide = Breakpoints.isExpanded(MediaQuery.sizeOf(context).width);
     final padding = isWide ? 24.0 : 16.0;
 
@@ -131,24 +143,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
     double padding,
   ) {
     if (provider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const StateView.loading(message: 'Memuat katalog game…');
     }
-
-    Future<void> refresh() =>
-        context.read<GameProvider>().loadGames(showLoading: false);
 
     final error = provider.error;
     if (error != null) {
       return RefreshIndicator(
-        onRefresh: refresh,
-        child: _CenteredScrollable(
-          child: Text(
-            error,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
+        onRefresh: _refresh,
+        child: StateView.error(
+          title: 'Gagal memuat katalog',
+          message: error,
+          onRetry: () => context.read<GameProvider>().loadGames(),
         ),
       );
     }
@@ -156,8 +161,14 @@ class _CatalogScreenState extends State<CatalogScreen> {
     final games = provider.games;
     if (games.isEmpty) {
       return RefreshIndicator(
-        onRefresh: refresh,
-        child: _NoResults(onReset: _resetFilters),
+        onRefresh: _refresh,
+        child: StateView.empty(
+          icon: Icons.search_off,
+          title: 'Tidak ada game yang cocok',
+          message: 'Coba kata kunci lain atau pilih genre Semua.',
+          actionLabel: 'Reset filter',
+          onAction: _resetFilters,
+        ),
       );
     }
 
@@ -172,9 +183,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
         final itemHeight = itemWidth * 9 / 16 + 28 + textScaler.scale(36);
 
         return RefreshIndicator(
-          onRefresh: refresh,
+          onRefresh: _refresh,
           child: GridView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
+            // Keyboard tertutup saat grid digulir.
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(padding, 4, padding, padding),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -231,79 +243,6 @@ class _CatalogSearchBar extends StatelessWidget {
       elevation: const WidgetStatePropertyAll(0),
       padding: const WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: 16),
-      ),
-    );
-  }
-}
-
-class _CenteredScrollable extends StatelessWidget {
-  const _CenteredScrollable({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Center(
-            child: Padding(padding: const EdgeInsets.all(24), child: child),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NoResults extends StatelessWidget {
-  const _NoResults({required this.onReset});
-
-  final VoidCallback onReset;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return _CenteredScrollable(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHigh,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.search_off,
-              size: 32,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Tidak ada game yang cocok',
-            textAlign: TextAlign.center,
-            style: textTheme.titleMedium,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Coba kata kunci lain atau pilih genre Semua.',
-            textAlign: TextAlign.center,
-            style: textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton.tonal(
-            onPressed: onReset,
-            child: const Text('Reset filter'),
-          ),
-        ],
       ),
     );
   }

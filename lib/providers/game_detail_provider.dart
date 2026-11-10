@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'package:gameshelf/models/game_detail.dart';
 import 'package:gameshelf/repositories/game_repository.dart';
+import 'package:gameshelf/utils/error_message.dart';
 
 class GameDetailProvider extends ChangeNotifier {
   GameDetailProvider(this._repository, this.gameId);
@@ -26,7 +27,7 @@ class GameDetailProvider extends ChangeNotifier {
     try {
       _detail = await _repository.fetchGameDetail(gameId);
     } catch (e) {
-      _error = 'Gagal memuat detail game. ($e)';
+      _error = friendlyErrorMessage(e);
     }
 
     _isLoading = false;

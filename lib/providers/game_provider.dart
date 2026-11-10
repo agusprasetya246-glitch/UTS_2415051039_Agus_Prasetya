@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:gameshelf/config/genres.dart';
 import 'package:gameshelf/models/game.dart';
 import 'package:gameshelf/repositories/game_repository.dart';
+import 'package:gameshelf/utils/error_message.dart';
 
 class GameProvider extends ChangeNotifier {
   GameProvider(this._repository);
@@ -37,9 +38,9 @@ class GameProvider extends ChangeNotifier {
   bool get isLoadingPopular => _isLoadingPopular;
   String? get popularError => _popularError;
 
-  Future<void> loadGames({bool showLoading = true}) async {
+  Future<void> loadGames() async {
     final requestId = ++_requestId;
-    if (showLoading) _isLoading = true;
+    _isLoading = true;
     _error = null;
     notifyListeners();
 
@@ -51,10 +52,29 @@ class GameProvider extends ChangeNotifier {
       _games = result;
     } catch (e) {
       if (requestId != _requestId) return;
-      _error = 'Gagal memuat katalog. ($e)';
+      _error = friendlyErrorMessage(e);
     }
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> refreshGames() async {
+    final requestId = ++_requestId;
+
+    try {
+      final result = await _repository.fetchGames(
+        category: _selectedGenre.category,
+      );
+      if (requestId != _requestId) return;
+      _games = result;
+      _error = null;
+    } catch (e) {
+      if (requestId != _requestId) return;
+      if (_error == null && _games.isNotEmpty) rethrow;
+      _error = friendlyErrorMessage(e);
+    }
+
     notifyListeners();
   }
 
@@ -84,7 +104,7 @@ class GameProvider extends ChangeNotifier {
     try {
       _popularGames = await _repository.fetchPopularGames();
     } catch (e) {
-      _popularError = 'Gagal memuat game populer. ($e)';
+      _popularError = friendlyErrorMessage(e);
     }
 
     _isLoadingPopular = false;
