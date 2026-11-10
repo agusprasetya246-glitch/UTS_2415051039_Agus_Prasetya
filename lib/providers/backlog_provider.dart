@@ -43,6 +43,16 @@ class BacklogProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// DELETE: menghapus dari database dulu, baru dari daftar.
+  Future<void> remove(BacklogItem item) async {
+    final id = item.id;
+    if (id == null) return;
+
+    await _repository.remove(id);
+    _items = _items.where((current) => current.id != id).toList();
+    notifyListeners();
+  }
+
   List<BacklogItem> get items => List.unmodifiable(_items);
   bool get isLoading => _isLoading;
   String? get error => _error;

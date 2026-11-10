@@ -61,4 +61,12 @@ class BacklogSupabaseService {
       throw DatabaseException('Gagal memperbarui data (${e.message})');
     }
   }
+
+  Future<void> delete(String id) async {
+    try {
+      await _client.from(_table).delete().eq('id', id);
+    } on PostgrestException catch (e) {
+      throw DatabaseException('Gagal menghapus data (${e.message})');
+    }
+  }
 }

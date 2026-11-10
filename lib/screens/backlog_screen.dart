@@ -7,6 +7,9 @@ import 'package:gameshelf/screens/edit_backlog_screen.dart';
 import 'package:gameshelf/utils/date_formatter.dart';
 import 'package:gameshelf/widgets/backlog_tile.dart';
 import 'package:gameshelf/widgets/category_chip.dart';
+import 'package:gameshelf/models/backlog_item.dart';
+import 'package:gameshelf/services/database_exception.dart';
+import 'package:gameshelf/widgets/confirm_delete_dialog.dart';
 
 class BacklogScreen extends StatelessWidget {
   const BacklogScreen({super.key});
@@ -106,8 +109,36 @@ class BacklogScreen extends StatelessWidget {
               builder: (context) => EditBacklogScreen(item: item),
             ),
           ),
+          onDelete: () => _confirmDelete(context, item),
         );
       },
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, BacklogItem item) async {
+    // Ambil semua yang butuh context SEBELUM await.
+    final messenger = ScaffoldMessenger.of(context);
+    final backlog = context.read<BacklogProvider>();
+
+    final confirmed = await showConfirmDeleteDialog(
+      context,
+      itemName: item.title,
+    );
+    if (!confirmed) return;
+
+    try {
+      await backlog.remove(item);
+      messenger.showSnackBar(
+        SnackBar(content: Text('${item.title} dihapus dari backlog')),
+      );
+    } on DatabaseException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Gagal menghapus. Periksa koneksi lalu coba lagi.'),
+        ),
+      );
+    }
   }
 }

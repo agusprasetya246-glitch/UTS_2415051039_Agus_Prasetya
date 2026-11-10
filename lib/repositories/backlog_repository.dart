@@ -36,4 +36,8 @@ class BacklogRepository {
   Future<BacklogItem> update(BacklogItem item) {
     return _service.update(item);
   }
+
+  Future<void> remove(String id) {
+    return _service.delete(id);
+  }
 }
