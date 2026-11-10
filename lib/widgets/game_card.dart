@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:gameshelf/models/backlog_status.dart';
 import 'package:gameshelf/widgets/game_thumbnail.dart';
 import 'package:gameshelf/widgets/status_badge.dart';
-import 'package:gameshelf/models/backlog_status.dart';
 
 class GameCard extends StatelessWidget {
   const GameCard({
@@ -22,11 +22,44 @@ class GameCard extends StatelessWidget {
   final BacklogStatus? status;
   final VoidCallback? onTap;
 
+  static const EdgeInsets _textPadding = EdgeInsets.fromLTRB(12, 10, 12, 12);
+  static const double _textGap = 4;
+
+  static TextStyle? _titleStyle(BuildContext context) =>
+      Theme.of(context).textTheme.titleSmall
+          ?.copyWith(fontWeight: FontWeight.w600);
+
+  static TextStyle? _metaStyle(BuildContext context) =>
+      Theme.of(context).textTheme.bodySmall;
+
+  static double heightFor(BuildContext context, double width) {
+    final textScaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+
+    double lineHeight(TextStyle? style) {
+      final painter = TextPainter(
+        text: TextSpan(text: 'Ag', style: style),
+        maxLines: 1,
+        textDirection: direction,
+        textScaler: textScaler,
+      )..layout();
+      final height = painter.height;
+      painter.dispose();
+      return height;
+    }
+
+    return width * 9 / 16 +
+        _textPadding.vertical +
+        lineHeight(_titleStyle(context)) +
+        _textGap +
+        lineHeight(_metaStyle(context)) +
+        2;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final status = this.status;
+    final badgeStatus = status;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -38,20 +71,25 @@ class GameCard extends StatelessWidget {
         onTap: onTap,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
               children: [
-                GameThumbnail(title: title, imageUrl: thumbnailUrl),
-                if (status != null)
+                GameThumbnail(
+                  title: title,
+                  imageUrl: thumbnailUrl,
+                  borderRadius: 0,
+                ),
+                if (badgeStatus != null)
                   Positioned(
                     top: 8,
                     left: 8,
-                    child: StatusBadge(status: status, small: true),
+                    child: StatusBadge(status: badgeStatus, small: true),
                   ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              padding: _textPadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -59,18 +97,15 @@ class GameCard extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: _titleStyle(context),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: _textGap),
                   Text(
                     '$genre · $platform',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: _metaStyle(context)
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),

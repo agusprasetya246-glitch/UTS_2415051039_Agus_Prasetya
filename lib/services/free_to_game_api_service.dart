@@ -16,10 +16,7 @@ class FreeToGameApiService {
   final http.Client _client;
 
   Future<List<Game>> fetchGames({String? category, String? sortBy}) async {
-    final params = <String, String>{
-      if (category != null) 'category': category,
-      if (sortBy != null) 'sort-by': sortBy,
-    };
+    final params = <String, String>{'category': ?category, 'sort-by': ?sortBy};
     final uri = Uri.https(_host, '/api/games', params.isEmpty ? null : params);
     final data = await _getJson(uri);
 

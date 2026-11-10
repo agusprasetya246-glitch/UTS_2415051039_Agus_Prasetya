@@ -179,8 +179,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
         final itemWidth =
             (constraints.maxWidth - padding * 2 - spacing * (columns - 1)) /
             columns;
-        final textScaler = MediaQuery.textScalerOf(context);
-        final itemHeight = itemWidth * 9 / 16 + 28 + textScaler.scale(36);
+        final itemHeight = GameCard.heightFor(context, itemWidth);
 
         return RefreshIndicator(
           onRefresh: _refresh,

@@ -150,10 +150,17 @@ class HomeScreen extends StatelessWidget {
             onAction: () => onOpenTab?.call(AppTab.catalog),
           ),
           const SizedBox(height: 4),
-          SizedBox(height: 210, child: _buildPopular(context, games, backlog)),
+          SizedBox(
+            height: _popularRowHeight(context),
+            child: _buildPopular(context, games, backlog),
+          ),
         ],
       ),
     );
+  }
+
+  double _popularRowHeight(BuildContext context) {
+    return GameCard.heightFor(context, 220);
   }
 
   Widget _buildPopular(
